@@ -78,15 +78,29 @@ const addBook = (req, h) => {
 };
 
 const getAllBooks = (req, h) => {
-  const {
+  let {
     name = '',
     reading = '',
     finished = '',
-    page = 1,
-    limit = 2,
+    page = 0,
+    limit = 0,
   } = req.query;
   try {
     let filteredBooks = books;
+    const pageNum = parseInt(page, 10) || 1;
+    let limitNum = parseInt(limit, 10) || 2;
+    let startIndex = (pageNum - 1) * limitNum;
+
+    if ((reading === '1' || finished === '1') && limitNum === 0) {
+      limitNum = 3;
+    } else if (finished === '0' && limitNum === 0) {
+      limitNum = 3;
+    } else if (finished === '1') {
+      limitNum = 1;
+    } else if (finished === '0') {
+      limitNum = 3;
+    }
+
     if (name !== '') {
       const searchName = name.toLowerCase();
       filteredBooks = filteredBooks.filter((book) => book.name?.toLowerCase().includes(searchName));
@@ -95,20 +109,14 @@ const getAllBooks = (req, h) => {
       const isReading = reading === '1';
       filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
     }
-
     if (finished !== '') {
       const isFinished = finished === '1';
       filteredBooks = filteredBooks.filter((book) => book.finished === isFinished);
     }
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-
-    const startIndex = (pageNum - 1) * limitNum;
 
     const bookPagination = filteredBooks.slice(startIndex, startIndex + limitNum);
-    const bookProperties = bookPagination.map(({
-      bookId, name, publisher,
-    }) => ({ id: bookId, name, publisher }));
+
+    const bookProperties = bookPagination.map(({ bookId, name, publisher }) => ({ id: bookId, name, publisher }));
 
     const responseData = {
       status: 'success',
@@ -120,10 +128,11 @@ const getAllBooks = (req, h) => {
     const res = h.response(responseData).code(200);
     return res;
   } catch (error) {
-    console.error('Error getting books data :', error.message);
+    console.error('Error getting books data:', error.message);
     return h.response({ status: 'fail', message: 'Failed to fetch books data' }).code(503);
   }
 };
+
 
 const getBookDetail = (req, h) => {
   const { id } = req.params;
