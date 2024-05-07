@@ -143,7 +143,18 @@ const getBookDetail = (req, h) => {
       status: 'success',
       data: {
         book: {
-          ...book,
+          id: book.bookId,
+          name: book.name,
+          year: book.year,
+          author: book.author,
+          summary: book.summary,
+          publisher: book.publisher,
+          pageCount: book.pageCount,
+          readPage: book.readPage,
+          finished: book.pageCount === book.readPage,
+          reading: book.readPage === 0,
+          insertedAt: book.insertedAt,
+          updatedAt: book.updatedAt,
         },
       },
     })
@@ -231,7 +242,7 @@ const updateBook = (req, h) => {
 const deleteBook = (req, h) => {
   const { id } = req.params;
   try {
-    const index = books.findIndex((book) => book.id === id);
+    const index = books.findIndex((book) => book.bookId === id);
 
     if (index !== -1) {
       books.splice(index, 1);
