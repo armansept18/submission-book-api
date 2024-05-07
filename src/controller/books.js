@@ -116,9 +116,11 @@ const getAllBooks = (req, h) => {
 
     const bookPagination = filteredBooks.slice(startIndex, startIndex + limitNum);
 
-    const bookProperties = bookPagination.map(({
-      bookId, name, publisher,
-    }) => ({ id: bookId, name, publisher }));
+    const bookProperties = bookPagination.map((filteredBooks) => ({
+      id: filteredBooks.bookId,
+      name: filteredBooks.name,
+      publisher: filteredBooks.publisher,
+    }));
 
     const responseData = {
       status: 'success',
