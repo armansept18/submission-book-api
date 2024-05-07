@@ -78,36 +78,46 @@ const addBook = (req, h) => {
 };
 
 const getAllBooks = (req, h) => {
-  const { name = '', reading = '', finished = '' } = req.query;
+  const {
+    name = '',
+    reading = '',
+    finished = '',
+    page = 1,
+    limit = 2,
+  } = req.query;
   try {
     let filteredBooks = books;
     if (name !== '') {
       const searchName = name.toLowerCase();
       filteredBooks = filteredBooks.filter((book) => book.name?.toLowerCase().includes(searchName));
     }
-    const isReading = reading === '1';
-    if (reading) {
+    if (reading !== '') {
+      const isReading = reading === '1';
       filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
     }
 
-    const isFinished = finished === '1';
-    if (finished) {
+    if (finished !== '') {
+      const isFinished = finished === '1';
       filteredBooks = filteredBooks.filter((book) => book.finished === isFinished);
     }
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
 
-    const bookProperties = filteredBooks.map((book) => ({
-      id: book.bookId,
-      name: book.name,
-      publisher: book.publisher,
-    }));
+    const startIndex = (pageNum - 1) * limitNum;
 
-    const res = h.response({
+    const bookPagination = filteredBooks.slice(startIndex, startIndex + limitNum);
+    const bookProperties = bookPagination.map(({
+      bookId, name, publisher,
+    }) => ({ id: bookId, name, publisher }));
+
+    const responseData = {
       status: 'success',
       data: {
         books: bookProperties,
       },
-    })
-      .code(200);
+    };
+
+    const res = h.response(responseData).code(200);
     return res;
   } catch (error) {
     console.error('Error getting books data :', error.message);
@@ -118,7 +128,7 @@ const getAllBooks = (req, h) => {
 const getBookDetail = (req, h) => {
   const { id } = req.params;
   try {
-    const book = books.filter((a) => a.id === id)[0];
+    const book = books.filter((a) => a.bookId === id)[0];
 
     if (!book) {
       const res = h.response({
@@ -165,7 +175,7 @@ const updateBook = (req, h) => {
   const isReading = readPageNum !== 0;
   const isFinished = pageCountNum === readPageNum;
   try {
-    const index = books.findIndex((book) => book.id === id);
+    const index = books.findIndex((book) => book.bookId === id);
     if (!name) {
       return h.response({
         status: 'fail',
