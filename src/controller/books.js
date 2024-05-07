@@ -116,7 +116,9 @@ const getAllBooks = (req, h) => {
 
     const bookPagination = filteredBooks.slice(startIndex, startIndex + limitNum);
 
-    const bookProperties = bookPagination.map(({ bookId, name, publisher }) => ({ id: bookId, name, publisher }));
+    const bookProperties = bookPagination.map(({
+      bookId, name, publisher,
+    }) => ({ id: bookId, name, publisher }));
 
     const responseData = {
       status: 'success',
@@ -132,7 +134,6 @@ const getAllBooks = (req, h) => {
     return h.response({ status: 'fail', message: 'Failed to fetch books data' }).code(503);
   }
 };
-
 
 const getBookDetail = (req, h) => {
   const { id } = req.params;
