@@ -24,6 +24,23 @@ const addBook = (req, h) => {
   const isFinished = pageCountNum === readPageNum;
 
   try {
+    if (name === undefined || name === '') {
+      const res = h.response({
+        status: 'fail',
+        message: 'Gagal menambahkan buku. Mohon isi nama buku',
+      })
+        .code(400);
+      return res;
+    }
+    if (readPage > pageCount) {
+      const res = h.response({
+        status: 'fail',
+        message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
+      })
+        .code(400);
+      return res;
+    }
+
     const newBook = {
       bookId,
       name,
@@ -42,23 +59,7 @@ const addBook = (req, h) => {
     books.push(newBook);
 
     const isSuccess = books.filter((book) => book.bookId === bookId).length > 0;
-
-    if (!name) {
-      const res = h.response({
-        status: 'fail',
-        message: 'Gagal menambahkan buku. Mohon isi nama buku',
-      })
-        .code(400);
-      return res;
-    }
-    if (readPage > pageCount) {
-      const res = h.response({
-        status: 'fail',
-        message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
-      })
-        .code(400);
-      return res;
-    }
+    
     if (isSuccess) {
       const res = h.response({
         status: 'success',
@@ -80,10 +81,10 @@ const addBook = (req, h) => {
 const getAllBooks = (req, h) => {
   let {
     name = '',
-    reading = '',
-    finished = '',
     page = 0,
     limit = 0,
+    finished,
+    reading,
   } = req.query;
   try {
     let filteredBooks = books;
@@ -105,13 +106,11 @@ const getAllBooks = (req, h) => {
       const searchName = name.toLowerCase();
       filteredBooks = filteredBooks.filter((book) => book.name?.toLowerCase().includes(searchName));
     }
-    if (reading !== '') {
-      const isReading = reading === '1';
-      filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
+    if (reading !== undefined) {
+      filteredBooks = filteredBooks.filter((book) => book.reading === Boolean(Number(reading)));
     }
-    if (finished !== '') {
-      const isFinished = finished === '1';
-      filteredBooks = filteredBooks.filter((book) => book.finished === isFinished);
+    if (finished !== undefined) {
+      filteredBooks = filteredBooks.filter((book) => book.finished === Boolean(Number(finished)));
     }
 
     const bookPagination = filteredBooks.slice(startIndex, startIndex + limitNum);
